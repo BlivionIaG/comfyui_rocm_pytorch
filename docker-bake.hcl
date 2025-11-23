@@ -1,0 +1,85 @@
+variable "REGISTRY_REPO_NAME" {
+    default = "blivioniag/comfyui_rocm_pytorch"
+}
+
+variable "IMAGE_VERSION" {
+    default = "0.0.1"
+}
+
+variable "COMFYUI_VERSION" {
+    default = "v0.3.71"
+}
+
+variable "COMFYUI_MANAGER_VERSION" {
+    default = "3.37.1"
+}
+
+variable "COMFY_CLI_VERSION" {
+    default = "1.5.3"
+}
+
+variable "BASE_IMAGE" {
+    default = "docker.io/rocm/pytorch"
+}
+
+function "tag" {
+    params = [tag, rocm]
+    result = [
+        "${REGISTRY_REPO_NAME}:${tag}",
+        "${REGISTRY_REPO_NAME}:${tag}-comfyui${COMFYUI_VERSION}",
+        "${REGISTRY_REPO_NAME}:${tag}-${rocm}",
+        "${REGISTRY_REPO_NAME}:${tag}-comfyui${COMFYUI_VERSION}-${rocm}",
+        "${REGISTRY_REPO_NAME}:comfyui${COMFYUI_VERSION}",
+        "${REGISTRY_REPO_NAME}:comfyui${COMFYUI_VERSION}-${rocm}",
+        "${REGISTRY_REPO_NAME}:${rocm}",
+    ]
+}
+
+target "_common" {
+    dockerfile = "Dockerfile"
+    context = "."
+    args = {
+        COMFYUI_VERSION = COMFYUI_VERSION
+        COMFYUI_MANAGER_VERSION = COMFYUI_MANAGER_VERSION
+        COMFY_CLI_VERSION = COMFY_CLI_VERSION
+    }
+}
+
+target "_rocm710" {
+    extends = ["_common"]
+    args = {
+        BASE_IMAGE = BASE_IMAGE
+        BASE_IMAGE_VERSION = "rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.8.0"
+    }
+}
+
+target "_rocm644" {
+    extends = ["_common"]
+    args = {
+        BASE_IMAGE = BASE_IMAGE
+        BASE_IMAGE_VERSION = "rocm6.4.4_ubuntu24.04_py3.12_pytorch_release_2.7.1"
+    }
+}
+
+target "_gfx906" {
+    extends = ["_common"]
+    args = {
+        BASE_IMAGE = "docker.io/mixa3607/pytorch-gfx906"
+        BASE_IMAGE_VERSION = "v2.9.0-rocm-7.0.2"
+    }
+}
+
+target "${IMAGE_VERSION}-rocm7.1" {
+    extends = ["_rocm710"]
+    tags = tag(IMAGE_VERSION, "rocm7.1")
+}
+
+target "${IMAGE_VERSION}-rocm6.4.4" {
+    extends = ["_rocm644"]
+    tags = tag(IMAGE_VERSION, "rocm6.4.4")
+}
+    
+target "${IMAGE_VERSION}-gfx906" {
+    extends = ["_gfx906"]
+    tags = tag(IMAGE_VERSION, "gfx906")
+}

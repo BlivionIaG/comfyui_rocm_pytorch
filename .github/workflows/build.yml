@@ -1,0 +1,118 @@
+name: Build and push to dockerhub
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: "Force build even if image exists"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    tags:
+      - "*"
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: blivioniag/comfyui_rocm_pytorch
+  COMFYUI_REPO: comfyanonymous/ComfyUI
+
+jobs:
+  check_release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      should_build: ${{ steps.check_image.outputs.should_build }}
+      image_version: ${{ steps.get_image_version.outputs.image_version }}
+    steps:
+      - name: Get latest ComfyUI release
+        id: get_version
+        run: |
+          LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFYUI_REPO }}/releases/latest | jq -r .tag_name)
+          echo "Latest release: $LATEST_RELEASE"
+          echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Determine Image Version
+        id: get_image_version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "Triggered by tag: ${{ github.ref_name }}"
+            echo "image_version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "Using default image version: 0.0.1"
+            echo "image_version=0.0.1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if image exists
+        id: check_image
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+          IMAGE_VERSION: ${{ steps.get_image_version.outputs.image_version }}
+        run: |
+          TAG="comfyui${VERSION}"
+          echo "Checking for tag: $TAG"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_build }}" == "true" ]]; then
+            echo "Force build enabled."
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+             echo "Triggered by tag push. Always build."
+             echo "should_build=true" >> $GITHUB_OUTPUT
+             exit 0
+          fi
+
+          # Check Docker Hub API
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/repositories/${{ env.IMAGE_NAME }}/tags/$TAG")
+
+          if [ "$HTTP_CODE" == "200" ]; then
+            echo "Image $TAG already exists."
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "Image $TAG does not exist. Triggering build."
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: check_release
+    if: needs.check_release.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ["${{ needs.check_release.outputs.image_version }}"]
+        rocm: [rocm7.1, rocm6.4.4, gfx906]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@v4.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.11.1
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/bake-action@v6
+        with:
+          target: ${{ matrix.target }}-${{ matrix.rocm }}
+          push: true
+          set: |
+            *.args.COMFYUI_VERSION=${{ needs.check_release.outputs.version }}
+            *.args.IMAGE_VERSION=${{ needs.check_release.outputs.image_version }}

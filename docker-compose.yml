@@ -1,0 +1,21 @@
+services:
+    comfyui:
+        image: blivioniag/comfyui_rocm_pytorch
+        container_name: comfyui
+        cap_add:
+          - SYS_PTRACE
+        security_opt:
+          - seccomp=unconfined
+        devices:
+          - /dev/kfd
+          - /dev/dri
+        group_add:
+          - video
+        ipc: host
+        ports:
+            - "8188:8188"
+        volumes:
+            - checkpoints:/app/models/checkpoints
+
+volumes:
+    checkpoints:
