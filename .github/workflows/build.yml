@@ -116,3 +116,5 @@ jobs:
           set: |
             *.args.COMFYUI_VERSION=${{ needs.check_release.outputs.version }}
             *.args.IMAGE_VERSION=${{ needs.check_release.outputs.image_version }}
+            *.cache-from=type=gha,scope=${{ matrix.rocm }}
+            *.cache-to=type=gha,mode=max,scope=${{ matrix.rocm }}
