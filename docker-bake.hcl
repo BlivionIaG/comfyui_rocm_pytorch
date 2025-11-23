@@ -45,7 +45,7 @@ target "_common" {
     }
 }
 
-target "rocm7.1" {
+target "rocm710" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = BASE_IMAGE
@@ -54,7 +54,7 @@ target "rocm7.1" {
     tags = tag(IMAGE_VERSION, "rocm7.1")
 }
 
-target "rocm6.4.4" {
+target "rocm644" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = BASE_IMAGE

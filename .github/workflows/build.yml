@@ -85,7 +85,7 @@ jobs:
       fail-fast: false
       matrix:
         target: ["${{ needs.check_release.outputs.image_version }}"]
-        rocm: [rocm7.1, rocm6.4.4, gfx906]
+        rocm: [rocm710, rocm644, gfx906]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
