@@ -45,41 +45,29 @@ target "_common" {
     }
 }
 
-target "_rocm710" {
+target "rocm7.1" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = BASE_IMAGE
         BASE_IMAGE_VERSION = "rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.8.0"
     }
+    tags = tag(IMAGE_VERSION, "rocm7.1")
 }
 
-target "_rocm644" {
+target "rocm6.4.4" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = BASE_IMAGE
         BASE_IMAGE_VERSION = "rocm6.4.4_ubuntu24.04_py3.12_pytorch_release_2.7.1"
     }
+    tags = tag(IMAGE_VERSION, "rocm6.4.4")
 }
-
-target "_gfx906" {
+    
+target "gfx906" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = "docker.io/mixa3607/pytorch-gfx906"
         BASE_IMAGE_VERSION = "v2.9.0-rocm-7.0.2"
     }
-}
-
-target "${IMAGE_VERSION}-rocm7.1" {
-    extends = ["_rocm710"]
-    tags = tag(IMAGE_VERSION, "rocm7.1")
-}
-
-target "${IMAGE_VERSION}-rocm6.4.4" {
-    extends = ["_rocm644"]
-    tags = tag(IMAGE_VERSION, "rocm6.4.4")
-}
-    
-target "${IMAGE_VERSION}-gfx906" {
-    extends = ["_gfx906"]
     tags = tag(IMAGE_VERSION, "gfx906")
 }
