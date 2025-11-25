@@ -36,7 +36,8 @@ RUN git clone --branch ${COMFYUI_MANAGER_VERSION} https://github.com/Comfy-Org/C
 # Set working directory
 WORKDIR ${APP_DIR}
 
-VOLUME ${APP_DIR}/models/checkpoints
+VOLUME ${APP_DIR}/models
+VOLUME ${APP_DIR}/output
 
 EXPOSE 8188
 

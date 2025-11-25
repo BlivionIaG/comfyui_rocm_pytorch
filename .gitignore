@@ -1,2 +1,4 @@
 build_log*.txt
 checkpoints
+models
+output

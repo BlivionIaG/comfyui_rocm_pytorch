@@ -18,12 +18,16 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME: blivioniag/comfyui_rocm_pytorch
   COMFYUI_REPO: comfyanonymous/ComfyUI
+  COMFYUI_MANAGER_REPO: Comfy-Org/ComfyUI-Manager
+  COMFY_CLI_REPO: Comfy-Org/comfy-cli
 
 jobs:
   check_release:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      manager_version: ${{ steps.get_manager_version.outputs.version }}
+      cli_version: ${{ steps.get_cli_version.outputs.version }}
       should_build: ${{ steps.check_image.outputs.should_build }}
       image_version: ${{ steps.get_image_version.outputs.image_version }}
     steps:
@@ -32,6 +36,20 @@ jobs:
         run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFYUI_REPO }}/releases/latest | jq -r .tag_name)
           echo "Latest release: $LATEST_RELEASE"
+          echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Get latest ComfyUI-Manager release
+        id: get_manager_version
+        run: |
+          LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFYUI_MANAGER_REPO }}/releases/latest | jq -r .tag_name)
+          echo "Latest ComfyUI-Manager release: $LATEST_RELEASE"
+          echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Get latest Comfy-CLI release
+        id: get_cli_version
+        run: |
+          LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFY_CLI_REPO }}/releases/latest | jq -r .tag_name)
+          echo "Latest Comfy-CLI release: $LATEST_RELEASE"
           echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Determine Image Version
@@ -85,7 +103,7 @@ jobs:
       fail-fast: false
       matrix:
         target: ["${{ needs.check_release.outputs.image_version }}"]
-        rocm: [rocm710, rocm644, gfx906]
+        rocm: [rocm710, gfx906]
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -126,6 +144,8 @@ jobs:
           push: true
           set: |
             *.args.COMFYUI_VERSION=${{ needs.check_release.outputs.version }}
+            *.args.COMFYUI_MANAGER_VERSION=${{ needs.check_release.outputs.manager_version }}
+            *.args.COMFY_CLI_VERSION=${{ needs.check_release.outputs.cli_version }}
             *.args.IMAGE_VERSION=${{ needs.check_release.outputs.image_version }}
             *.cache-from=type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-${{ matrix.rocm }},ignore-error=true
             *.cache-to=type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-${{ matrix.rocm }},mode=max,ignore-error=true

@@ -15,7 +15,9 @@ services:
         ports:
             - "8188:8188"
         volumes:
-            - checkpoints:/app/models/checkpoints
+            - models:/app/models
+            - output:/app/output
 
 volumes:
-    checkpoints:
+    models:
+    output:
