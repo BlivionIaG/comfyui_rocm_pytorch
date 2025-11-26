@@ -17,7 +17,9 @@ services:
         volumes:
             - models:/app/models
             - output:/app/output
-
+            - workflows:/app/user/default/workflows
+        restart: always
 volumes:
     models:
     output:
+    workflows:

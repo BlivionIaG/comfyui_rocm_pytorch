@@ -38,6 +38,7 @@ WORKDIR ${APP_DIR}
 
 VOLUME ${APP_DIR}/models
 VOLUME ${APP_DIR}/output
+VOLUME ${APP_DIR}/user/default/workflows
 
 EXPOSE 8188
 
