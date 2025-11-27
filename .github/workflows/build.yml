@@ -42,6 +42,10 @@ jobs:
         id: get_manager_version
         run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFYUI_MANAGER_REPO }}/releases/latest | jq -r .tag_name)
+          if [ -z "$LATEST_RELEASE" ] || [ "$LATEST_RELEASE" == "null" ]; then
+            echo "Failed to fetch latest ComfyUI-Manager release. Using default."
+            LATEST_RELEASE="2.52.2" # Fallback to a known working version
+          fi
           echo "Latest ComfyUI-Manager release: $LATEST_RELEASE"
           echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
@@ -49,6 +53,10 @@ jobs:
         id: get_cli_version
         run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/${{ env.COMFY_CLI_REPO }}/releases/latest | jq -r .tag_name)
+          if [ -z "$LATEST_RELEASE" ] || [ "$LATEST_RELEASE" == "null" ]; then
+             echo "Failed to fetch latest Comfy-CLI release. Using default."
+             LATEST_RELEASE="v1.3.6" # Fallback to a known working version
+          fi
           echo "Latest Comfy-CLI release: $LATEST_RELEASE"
           echo "version=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
