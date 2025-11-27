@@ -152,7 +152,6 @@ jobs:
           push: true
           set: |
             *.args.COMFYUI_VERSION=${{ needs.check_release.outputs.version }}
-            *.args.COMFYUI_MANAGER_VERSION=${{ needs.check_release.outputs.manager_version }}
             *.args.COMFY_CLI_VERSION=${{ needs.check_release.outputs.cli_version }}
             *.args.IMAGE_VERSION=${{ needs.check_release.outputs.image_version }}
             *.cache-from=type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-${{ matrix.rocm }},ignore-error=true
