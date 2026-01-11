@@ -3,7 +3,7 @@ variable "REGISTRY_REPO_NAME" {
 }
 
 variable "IMAGE_VERSION" {
-    default = "0.0.1"
+    default = "v0.0.5"
 }
 
 variable "COMFYUI_VERSION" {
@@ -58,7 +58,7 @@ target "rocm710" {
     extends = ["_common"]
     args = {
         BASE_IMAGE = BASE_IMAGE
-        BASE_IMAGE_VERSION = "rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.8.0"
+        BASE_IMAGE_VERSION = "rocm7.1_ubuntu24.04_py3.13_pytorch_release_2.9.1"
     }
     tags = concat(default_tag(IMAGE_VERSION), other_tag(IMAGE_VERSION, "rocm7.1"))
 }
