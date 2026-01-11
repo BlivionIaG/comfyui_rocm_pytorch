@@ -17,7 +17,7 @@ on:
 env:
   REGISTRY: docker.io
   IMAGE_NAME: blivioniag/comfyui_rocm_pytorch
-  COMFYUI_REPO: comfyanonymous/ComfyUI
+  COMFYUI_REPO: Comfy-Org/ComfyUI
   COMFYUI_MANAGER_REPO: Comfy-Org/ComfyUI-Manager
   COMFY_CLI_REPO: Comfy-Org/comfy-cli
 
