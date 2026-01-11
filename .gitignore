@@ -2,3 +2,5 @@ build_log*.txt
 checkpoints
 models
 output
+workflows
+*compose.override.y*ml

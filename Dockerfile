@@ -42,6 +42,7 @@ VOLUME ${APP_DIR}/user/default/workflows
 
 EXPOSE 8188
 
+ARG IMAGE_VERSION
 LABEL maintainer="BlivionIaG <kev29lt@gmail.com>" \
     version="${IMAGE_VERSION}" \
     description="ComfyUI with ROCm support"
